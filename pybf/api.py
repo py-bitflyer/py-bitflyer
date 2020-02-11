@@ -108,12 +108,19 @@ class API(object):
         params = {'product_code': self.product_code}
         return self._get_request(path, params)
 
-    def executions(self):
+    def executions(self, count=100, before=None, after=None):
         """
         約定履歴
         """
         path = '/v1/getexecutions'
-        params = {'product_code': self.product_code}
+        params = {
+            'product_code': self.product_code,
+            'count': count
+        }
+        if before:
+            params['before'] = before
+        if after:
+            params['after'] = after
         return self._get_request(path, params)
 
     def boardstate(self):
