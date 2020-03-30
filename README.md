@@ -19,6 +19,6 @@ public_api.markets()
 
 # Get executions
 # If you want 10 executions, pass count as a variable
-public_api.markets(count=10)
+public_api.executions(count=10)
 
 ```
