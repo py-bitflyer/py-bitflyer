@@ -13,12 +13,12 @@ $ pip3 install git+https://github.com/tapioka324/pybf.git
 from pybf import api
 
 
-pybf_ = api.API()
+public_api = api.API()
 # Get markets informations
-pybf_.markets() 
+public_api.markets() 
 
 # Get executions
 # If you want 10 executions, pass count as a variable
-pybf_.markets(count=10)
+public_api.executions(count=10)
 
 ```
