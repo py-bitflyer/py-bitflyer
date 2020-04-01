@@ -1,6 +1,6 @@
 # pybf
 
-A Python wrapper for bitFlyer API.
+A Python wrapper for [bitFlyer API](https://lightning.bitflyer.com/docs#http-api).
 
 ## Install
 
