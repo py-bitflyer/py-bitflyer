@@ -11,11 +11,12 @@ class RealtimeAPI(object):
     https://bf-lightning-api.readme.io/docs/realtime-api
     """
 
-    def __init__(self, channel):
+    def __init__(self, channel, data_queue):
         self.ws = None
         self.running = False
         self.end_point = 'wss://ws.lightstream.bitflyer.com/json-rpc'
         self.channel = channel
+        self.data_queue = data_queue
 
     def on_open(self):
         print('WebSocket connected')
@@ -25,11 +26,13 @@ class RealtimeAPI(object):
         print('WebSocket disconnected')
 
     def on_message(self, message):
-        message = json.loads(message)
-        if 'method' not in message or message['method'] != 'channelMessage':
+        messages = json.loads(message)
+        if 'method' not in messages or messages['method'] != 'channelMessage':
             return
 
-        print(message)
+        messages = messages['params']['message']
+        for message in messages['params']['message']:
+            self.data_queue.put(message)
 
     def on_error(self, error):
         print(error)
