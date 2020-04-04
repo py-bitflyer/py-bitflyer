@@ -31,7 +31,7 @@ class RealtimeAPI(object):
             return
 
         messages = messages['params']['message']
-        for message in messages['params']['message']:
+        for message in messages:
             self.data_queue.put(message)
 
     def on_error(self, error):
