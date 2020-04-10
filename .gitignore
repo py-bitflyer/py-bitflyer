@@ -10,4 +10,7 @@ build/
 dist/
 *.egg-info
 
+# Secret
+/pybf/config.json
+
 files.txt
