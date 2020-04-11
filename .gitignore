@@ -10,4 +10,7 @@ build/
 dist/
 *.egg-info
 
+# Secret
+config.json
+
 files.txt
