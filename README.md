@@ -12,10 +12,10 @@ $ pip3 install git+https://github.com/tapioka324/pybf.git
 
 ### For public_api
 ```python
-from pybf import api
+import pybf
 
 
-public_api = api.API()
+public_api = pybf.API()
 
 # Get markets informations
 public_api.markets() 
@@ -30,7 +30,7 @@ Create config.json under the `/pybf`. And write down your *APIKey* and *APISecre
 (!Atention)  
  This config.json has very very secret infomation of your bitflyer account. This repository has been set not to upload "config.json" in .gitignore.
 
-`/pybf/config.json`
+`/path/to/config.json`
 ```json
 {
     "Key" : "Your APIKey",
@@ -39,14 +39,14 @@ Create config.json under the `/pybf`. And write down your *APIKey* and *APISecre
 ```
 
 ```python
-from pybf import api
+import pybf
 
 
-private_api = api.API()
+private_api = pybf.API(mode='Private', config=config_path)
 
 # Get balance
-public_api.balance()
+private_api.balance()
 
 # Get a list of own executions
-public_api.childorders_list()
+private_api.childorders_list()
 ```
