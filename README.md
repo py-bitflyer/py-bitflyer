@@ -4,18 +4,18 @@ A Python wrapper for [bitFlyer API](https://lightning.bitflyer.com/docs#http-api
 
 ## Install
 
-```
-$ pip install git+https://github.com/py-bitflyer/py-bitflyer.git
+```bash
+$ pip install py-bitflyer
 ```
 
 ## For Usage
 
 ### For public_api
 ```python
-import pybf
+import py_bitflyer
 
 
-public_api = pybf.API()
+public_api = py_bitflyer.API()
 
 # Get markets informations
 public_api.markets()
@@ -39,10 +39,10 @@ Create config.json and write down your *APIKey* and *APISecret*.
 ```
 
 ```python
-import pybf
+import py_bitflyer
 
 
-private_api = pybf.API(mode='Private', config='/path/to/config.json')
+private_api = py_bitflyer.API(mode='Private', config='/path/to/config.json')
 
 # Get balance
 private_api.balance()
