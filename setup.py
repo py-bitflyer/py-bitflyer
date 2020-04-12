@@ -8,11 +8,11 @@ requires = [
 
 
 setup(
-    name='pybf',
+    name='py_bitflyer',
     version='0.1.3',
     description='A Python wrapper for bitFlyer API.',
-    url='https://github.com/tapioka324/pybf',
+    url='https://github.com/py-bitflyer/py-bitflyer',
     license='MIT License',
-    packages=['pybf'],
+    packages=['py_bitflyer'],
     install_requires=requires
 )
