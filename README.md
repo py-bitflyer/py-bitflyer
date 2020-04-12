@@ -42,7 +42,7 @@ Create config.json and write down your *APIKey* and *APISecret*.
 import pybf
 
 
-private_api = pybf.API(mode='Private', config='config_path')
+private_api = pybf.API(mode='Private', config='/path/to/config.json')
 
 # Get balance
 private_api.balance()
