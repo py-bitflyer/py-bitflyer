@@ -19,5 +19,10 @@ setup(
     url='https://github.com/py-bitflyer/py-bitflyer',
     license='MIT License',
     packages=['py_bitflyer'],
-    install_requires=requires
+    install_requires=requires,
+    keywords='bitflyer',
+    classifiers=[
+        'Programming Language :: Python :: 3',
+        'License :: OSI Approved :: MIT License'
+    ]
 )
