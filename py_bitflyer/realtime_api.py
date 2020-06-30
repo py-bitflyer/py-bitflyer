@@ -11,12 +11,13 @@ class RealtimeAPI(object):
     https://bf-lightning-api.readme.io/docs/realtime-api
     """
 
-    def __init__(self, channel, data_queue):
+    def __init__(self, channel, data_queue, is_daemon=False):
         self.ws = None
         self.running = False
         self.end_point = 'wss://ws.lightstream.bitflyer.com/json-rpc'
         self.channel = channel
         self.data_queue = data_queue
+        self.is_daemon = is_daemon
 
     def on_open(self):
         print('WebSocket connected')
@@ -57,7 +58,7 @@ class RealtimeAPI(object):
     def start(self):
         print('Start streaming')
         self.running = True
-        thread = threading.Thread(target=self.run)
+        thread = threading.Thread(target=self.run, daemon=self.is_daemon)
         thread.start()
 
     def stop(self):
