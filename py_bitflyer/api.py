@@ -82,6 +82,21 @@ class API(object):
         headers = self._make_header('POST', path, body)
         response = requests.post(url, data=body, headers=headers)
         return response.json()
+    
+    def _post_request_status(self, path, params):
+        """
+        POST メソッドのリクエスト
+        status_codeをレスポンス
+        """
+        url = self.url + path
+        print(url)
+        body = json.dumps(params)
+        print(body)
+        headers = None
+
+        headers = self._make_header('POST', path, body)
+        response = requests.post(url, data=body, headers=headers)
+        return response.status_code
 
     def markets(self):
         """
@@ -185,7 +200,7 @@ class API(object):
                 'product_code': self.product_code,
                 'child_order_id': child_order_id
             }
-        return self._post_request(path, params)
+        return self._post_request_status(path, params)
 
     def cancel_all_childorders(self):
         """
@@ -193,7 +208,7 @@ class API(object):
         """
         path = '/v1/me/cancelallchildorders'
         params = {'product_code': self.product_code}
-        return self._post_request(path, params)
+        return self._post_request_status(path, params)
 
     def childorders_list(self):
         """
