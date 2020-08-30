@@ -1,5 +1,9 @@
 # py-bitflyer
 
+![PyPI](https://img.shields.io/pypi/v/py-bitflyer?style=flat-square)
+![PyPI - Downloads](https://img.shields.io/pypi/dd/py-bitflyer?style=flat-square)
+![GitHub](https://img.shields.io/github/license/py-bitflyer/py-bitflyer?style=flat-square)
+
 A Python wrapper for [bitFlyer API](https://lightning.bitflyer.com/docs#http-api).
 
 ## Install
@@ -8,9 +12,10 @@ A Python wrapper for [bitFlyer API](https://lightning.bitflyer.com/docs#http-api
 $ pip install py-bitflyer
 ```
 
-## For Usage
+## Usage
 
-### For public_api
+### Public API
+
 ```python
 import py_bitflyer
 
@@ -25,12 +30,15 @@ public_api.markets()
 public_api.executions(count=10)
 ```
 
-### For private_api
+### Private API
+
 Create config.json and write down your *APIKey* and *APISecret*.
+
 (!Atention!)
- This config.json has very very secret infomation of your bitflyer account.
+ This config.json has very very secret information of your bitflyer account.
 
 `/path/to/config.json`
+
 ```json
 {
     "Key" : "Your APIKey",
