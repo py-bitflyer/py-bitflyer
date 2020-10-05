@@ -182,14 +182,14 @@ class API(object):
         注文をキャンセルする
         """
         path = '/v1/me/cancelchildorder'
-        if child_order_id == None and child_order_acceptance_id == None:
+        if child_order_id is None and child_order_acceptance_id is None:
             raise ValueError("Required!: 'child_order_id' or 'child_order_acceptance_id'")
-        if child_order_id != None:
+        if child_order_id is not None:
             params = {
                 'product_code': self.product_code,
                 'child_order_id': child_order_id
             }
-        if child_order_acceptance_id != None:
+        if child_order_acceptance_id is not None:
             params = {
                 'product_code': self.product_code,
                 'child_order_id': child_order_id
