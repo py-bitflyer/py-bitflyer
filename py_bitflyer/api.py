@@ -4,6 +4,7 @@ import time
 import hmac
 from hashlib import sha256
 from urllib.parse import urlencode
+from logging import getLogger
 
 
 class API(object):
@@ -14,6 +15,7 @@ class API(object):
     """
 
     def __init__(self, mode='Public', product_code='BTC_JPY', config='config.json'):
+        self.logger = getLogger(__name__)
         self.url = 'https://api.bitflyer.com'
         self.mode = mode
         self.product_code = product_code
@@ -21,6 +23,7 @@ class API(object):
         self.key = None
         self.secret = None
 
+        self.logger.info(f'HTTP {self.mode} API')
         if self.mode != 'Public' and self.mode != 'Private':
             raise ValueError('{} is not defined.'.format(self.mode))
 
@@ -28,8 +31,6 @@ class API(object):
             f = json.load(open(self.config, 'r'))
             self.key = f['Key']
             self.secret = f['Secret']
-
-        print('HTTP ' + self.mode + ' API')
 
     def _make_sign(self, text):
         """
@@ -65,6 +66,7 @@ class API(object):
                 url += '?' + urlencode(params)
         else:
             body = json.dumps(params)
+        self.logger.debug(f'Request: {method} {url} {body}')
 
         if self.mode == 'Private':
             headers = self._make_header(method, path, body)
