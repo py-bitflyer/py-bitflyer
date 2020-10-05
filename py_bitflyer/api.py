@@ -52,58 +52,50 @@ class API(object):
             'Content-Type': 'application/json'
         }
 
-    def _get_request(self, path, params=None):
+    def _request(self, path, method='GET', params=None):
         """
-        GET メソッドのリクエスト
+        HTTP リクエスト
         """
         url = self.url + path
-        if params:
-            url += '?' + urlencode(params)
-        print(url)
         body = ''
         headers = None
 
+        if method == 'GET':
+            if params:
+                url += '?' + urlencode(params)
+        else:
+            body = json.dumps(params)
+
         if self.mode == 'Private':
-            headers = self._make_header('GET', path, body)
+            headers = self._make_header(method, path, body)
 
-        response = requests.get(url, headers=headers)
-        return response.json()
+        try:
+            with requests.Session() as s:
+                if headers:
+                    s.headers.update(headers)
+                if method == 'GET':
+                    response = s.get(url, headers=headers)
+                else:
+                    response = s.post(url, data=body, headers=headers)
+        except requests.RequestException as e:
+            raise e
 
-    def _post_request(self, path, params):
-        """
-        POST メソッドのリクエスト
-        """
-        url = self.url + path
-        print(url)
-        body = json.dumps(params)
-        print(body)
-        headers = None
+        if response.status_code != 200:
+            return
 
-        headers = self._make_header('POST', path, body)
-        response = requests.post(url, data=body, headers=headers)
-        return response.json()
-    
-    def _post_request_status(self, path, params):
-        """
-        POST メソッドのリクエスト
-        status_codeをレスポンス
-        """
-        url = self.url + path
-        print(url)
-        body = json.dumps(params)
-        print(body)
-        headers = None
-
-        headers = self._make_header('POST', path, body)
-        response = requests.post(url, data=body, headers=headers)
-        return response.status_code
+        response.encoding = 'utf-8'
+        http_response = response.text
+        json_response = None
+        if len(http_response) > 0:
+            json_response = json.loads(http_response)
+        return json_response
 
     def markets(self):
         """
         マーケットの一覧
         """
         path = '/v1/getmarkets'
-        return self._get_request(path)
+        return self._request(path)
 
     def board(self):
         """
@@ -111,7 +103,7 @@ class API(object):
         """
         path = '/v1/getboard'
         params = {'product_code': self.product_code}
-        return self._get_request(path, params)
+        return self._request(path, params=params)
 
     def ticker(self):
         """
@@ -119,7 +111,7 @@ class API(object):
         """
         path = '/v1/getticker'
         params = {'product_code': self.product_code}
-        return self._get_request(path, params)
+        return self._request(path, params=params)
 
     def executions(self, count=100, before=None, after=None):
         """
@@ -134,7 +126,7 @@ class API(object):
             params['before'] = before
         if after:
             params['after'] = after
-        return self._get_request(path, params)
+        return self._request(path, params=params)
 
     def boardstate(self):
         """
@@ -142,7 +134,7 @@ class API(object):
         """
         path = '/v1/getboardstate'
         params = {'product_code': self.product_code}
-        return self._get_request(path, params)
+        return self._request(path, params=params)
 
     def health(self):
         """
@@ -150,21 +142,21 @@ class API(object):
         """
         path = '/v1/gethealth'
         params = {'product_code': self.product_code}
-        return self._get_request(path, params)
+        return self._request(path, params=params)
 
     def permissions(self):
         """
         API キーの権限を取得
         """
         path = '/v1/me/getpermissions'
-        return self._get_request(path)
+        return self._request(path)
 
     def balance(self):
         """
         資産残高を取得
         """
         path = '/v1/me/getbalance'
-        return self._get_request(path)
+        return self._request(path)
 
     def send_childorder(self, child_order_type, size, side='BUY', price=None, minute_to_expire=43200, time_in_force='GTC'):
         """
@@ -181,7 +173,7 @@ class API(object):
         }
         if child_order_type == 'LIMIT':
             params['price'] = price
-        return self._post_request(path, params)
+        return self._request(path, method='POST', params=params)
 
     def cancel_childorder(self, child_order_id=None, child_order_acceptance_id=None):
         """
@@ -200,7 +192,7 @@ class API(object):
                 'product_code': self.product_code,
                 'child_order_id': child_order_id
             }
-        return self._post_request_status(path, params)
+        return self._request(path, method='POST', params=params)
 
     def cancel_all_childorders(self):
         """
@@ -208,18 +200,18 @@ class API(object):
         """
         path = '/v1/me/cancelallchildorders'
         params = {'product_code': self.product_code}
-        return self._post_request_status(path, params)
+        return self._request(path, method='POST', params=params)
 
     def childorders_list(self):
         """
         注文の一覧を取得
         """
         path = '/v1/me/getchildorders'
-        return self._get_request(path)
+        return self._request(path)
 
     def executions_list(self):
         """
         約定の一覧を取得
         """
         path = '/v1/me/getexecutions'
-        return self._get_request(path)
+        return self._request(path)
