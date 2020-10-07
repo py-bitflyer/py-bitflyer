@@ -5,6 +5,7 @@ import hmac
 from hashlib import sha256
 from urllib.parse import urlencode
 from logging import getLogger
+from .exception import APIError
 
 
 class API(object):
@@ -25,7 +26,7 @@ class API(object):
 
         self.logger.info(f'HTTP {self.mode} API')
         if self.mode != 'Public' and self.mode != 'Private':
-            raise ValueError('{} is not defined.'.format(self.mode))
+            raise APIError(f'{self.mode} is not defined.')
 
         if self.mode == 'Private':
             f = json.load(open(self.config, 'r'))
