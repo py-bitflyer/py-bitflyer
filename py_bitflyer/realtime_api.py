@@ -54,7 +54,7 @@ class RealtimeAPI(object):
                     on_error=self.on_error)
                 self.ws.run_forever()
             except Exception as e:
-                print(e)
+                self.logger.error(e)
             time.sleep(3)
 
     def start(self):
