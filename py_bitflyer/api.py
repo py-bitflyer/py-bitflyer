@@ -1,4 +1,5 @@
 import requests
+from requests.exceptions import RequestException
 import json
 import time
 import hmac
@@ -80,11 +81,9 @@ class API(object):
                     response = s.get(url, headers=headers)
                 else:
                     response = s.post(url, data=body, headers=headers)
-        except requests.RequestException as e:
-            raise e
-
-        if response.status_code != 200:
-            return
+                response.raise_for_status()
+        except RequestException as e:
+            raise APIError(e)
 
         response.encoding = 'utf-8'
         http_response = response.text
