@@ -150,6 +150,9 @@ class API(object):
         """
         API キーの権限を取得
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/getpermissions'
         return self._request(path)
 
@@ -157,6 +160,9 @@ class API(object):
         """
         資産残高を取得
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/getbalance'
         return self._request(path)
 
@@ -164,6 +170,9 @@ class API(object):
         """
         新規注文を出す
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/sendchildorder'
         params = {
             'product_code': self.product_code,
@@ -181,6 +190,9 @@ class API(object):
         """
         注文をキャンセルする
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/cancelchildorder'
         if child_order_id is None and child_order_acceptance_id is None:
             raise ValueError("Required!: 'child_order_id' or 'child_order_acceptance_id'")
@@ -200,6 +212,9 @@ class API(object):
         """
         すべての注文をキャンセルする
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/cancelallchildorders'
         params = {'product_code': self.product_code}
         return self._request(path, method='POST', params=params)
@@ -208,6 +223,9 @@ class API(object):
         """
         注文の一覧を取得
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/getchildorders'
         return self._request(path)
 
@@ -215,5 +233,8 @@ class API(object):
         """
         約定の一覧を取得
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/getexecutions'
         return self._request(path)
