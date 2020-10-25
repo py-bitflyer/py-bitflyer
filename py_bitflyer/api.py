@@ -1,9 +1,12 @@
 import requests
+from requests.exceptions import RequestException
 import json
 import time
 import hmac
 from hashlib import sha256
 from urllib.parse import urlencode
+from logging import getLogger
+from .exception import APIError
 
 
 class API(object):
@@ -14,6 +17,7 @@ class API(object):
     """
 
     def __init__(self, mode='Public', product_code='BTC_JPY', config='config.json'):
+        self.logger = getLogger(__name__)
         self.url = 'https://api.bitflyer.com'
         self.mode = mode
         self.product_code = product_code
@@ -21,15 +25,14 @@ class API(object):
         self.key = None
         self.secret = None
 
+        self.logger.info(f'HTTP {self.mode} API')
         if self.mode != 'Public' and self.mode != 'Private':
-            raise ValueError('{} is not defined.'.format(self.mode))
+            raise APIError(f'{self.mode} is not defined.')
 
         if self.mode == 'Private':
             f = json.load(open(self.config, 'r'))
             self.key = f['Key']
             self.secret = f['Secret']
-
-        print('HTTP ' + self.mode + ' API')
 
     def _make_sign(self, text):
         """
@@ -52,58 +55,49 @@ class API(object):
             'Content-Type': 'application/json'
         }
 
-    def _get_request(self, path, params=None):
+    def _request(self, path, method='GET', params=None):
         """
-        GET メソッドのリクエスト
+        HTTP リクエスト
         """
         url = self.url + path
-        if params:
-            url += '?' + urlencode(params)
-        print(url)
         body = ''
         headers = None
 
+        if method == 'GET':
+            if params:
+                url += '?' + urlencode(params)
+        else:
+            body = json.dumps(params)
+        self.logger.debug(f'Request: {method} {url} {body}')
+
         if self.mode == 'Private':
-            headers = self._make_header('GET', path, body)
+            headers = self._make_header(method, path, body)
 
-        response = requests.get(url, headers=headers)
-        return response.json()
+        try:
+            with requests.Session() as s:
+                if headers:
+                    s.headers.update(headers)
+                if method == 'GET':
+                    response = s.get(url, headers=headers)
+                else:
+                    response = s.post(url, data=body, headers=headers)
+                response.raise_for_status()
+        except RequestException as e:
+            raise APIError(e)
 
-    def _post_request(self, path, params):
-        """
-        POST メソッドのリクエスト
-        """
-        url = self.url + path
-        print(url)
-        body = json.dumps(params)
-        print(body)
-        headers = None
-
-        headers = self._make_header('POST', path, body)
-        response = requests.post(url, data=body, headers=headers)
-        return response.json()
-    
-    def _post_request_status(self, path, params):
-        """
-        POST メソッドのリクエスト
-        status_codeをレスポンス
-        """
-        url = self.url + path
-        print(url)
-        body = json.dumps(params)
-        print(body)
-        headers = None
-
-        headers = self._make_header('POST', path, body)
-        response = requests.post(url, data=body, headers=headers)
-        return response.status_code
+        response.encoding = 'utf-8'
+        http_response = response.text
+        json_response = None
+        if len(http_response) > 0:
+            json_response = json.loads(http_response)
+        return json_response
 
     def markets(self):
         """
         マーケットの一覧
         """
         path = '/v1/getmarkets'
-        return self._get_request(path)
+        return self._request(path)
 
     def board(self):
         """
@@ -111,7 +105,7 @@ class API(object):
         """
         path = '/v1/getboard'
         params = {'product_code': self.product_code}
-        return self._get_request(path, params)
+        return self._request(path, params=params)
 
     def ticker(self):
         """
@@ -119,7 +113,7 @@ class API(object):
         """
         path = '/v1/getticker'
         params = {'product_code': self.product_code}
-        return self._get_request(path, params)
+        return self._request(path, params=params)
 
     def executions(self, count=100, before=None, after=None):
         """
@@ -134,7 +128,7 @@ class API(object):
             params['before'] = before
         if after:
             params['after'] = after
-        return self._get_request(path, params)
+        return self._request(path, params=params)
 
     def boardstate(self):
         """
@@ -142,7 +136,7 @@ class API(object):
         """
         path = '/v1/getboardstate'
         params = {'product_code': self.product_code}
-        return self._get_request(path, params)
+        return self._request(path, params=params)
 
     def health(self):
         """
@@ -150,26 +144,35 @@ class API(object):
         """
         path = '/v1/gethealth'
         params = {'product_code': self.product_code}
-        return self._get_request(path, params)
+        return self._request(path, params=params)
 
     def permissions(self):
         """
         API キーの権限を取得
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/getpermissions'
-        return self._get_request(path)
+        return self._request(path)
 
     def balance(self):
         """
         資産残高を取得
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/getbalance'
-        return self._get_request(path)
+        return self._request(path)
 
     def send_childorder(self, child_order_type, size, side='BUY', price=None, minute_to_expire=43200, time_in_force='GTC'):
         """
         新規注文を出す
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/sendchildorder'
         params = {
             'product_code': self.product_code,
@@ -181,45 +184,57 @@ class API(object):
         }
         if child_order_type == 'LIMIT':
             params['price'] = price
-        return self._post_request(path, params)
+        return self._request(path, method='POST', params=params)
 
     def cancel_childorder(self, child_order_id=None, child_order_acceptance_id=None):
         """
         注文をキャンセルする
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/cancelchildorder'
-        if child_order_id == None and child_order_acceptance_id == None:
+        if child_order_id is None and child_order_acceptance_id is None:
             raise ValueError("Required!: 'child_order_id' or 'child_order_acceptance_id'")
-        if child_order_id != None:
+        if child_order_id is not None:
             params = {
                 'product_code': self.product_code,
                 'child_order_id': child_order_id
             }
-        if child_order_acceptance_id != None:
+        if child_order_acceptance_id is not None:
             params = {
                 'product_code': self.product_code,
                 'child_order_id': child_order_id
             }
-        return self._post_request_status(path, params)
+        return self._request(path, method='POST', params=params)
 
     def cancel_all_childorders(self):
         """
         すべての注文をキャンセルする
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/cancelallchildorders'
         params = {'product_code': self.product_code}
-        return self._post_request_status(path, params)
+        return self._request(path, method='POST', params=params)
 
     def childorders_list(self):
         """
         注文の一覧を取得
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/getchildorders'
-        return self._get_request(path)
+        return self._request(path)
 
     def executions_list(self):
         """
         約定の一覧を取得
         """
+        if self.mode != 'Private':
+            raise APIError('This API can only be used in private mode')
+
         path = '/v1/me/getexecutions'
-        return self._get_request(path)
+        return self._request(path)

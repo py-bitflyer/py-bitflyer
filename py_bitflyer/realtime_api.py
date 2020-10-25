@@ -2,6 +2,7 @@ import json
 import threading
 import time
 import websocket
+from logging import getLogger
 
 
 class RealtimeAPI(object):
@@ -12,6 +13,7 @@ class RealtimeAPI(object):
     """
 
     def __init__(self, channel, data_queue, is_daemon=False):
+        self.logger = getLogger(__name__)
         self.ws = None
         self.running = False
         self.end_point = 'wss://ws.lightstream.bitflyer.com/json-rpc'
@@ -20,11 +22,11 @@ class RealtimeAPI(object):
         self.is_daemon = is_daemon
 
     def on_open(self):
-        print('WebSocket connected')
+        self.logger.info('WebSocket connected')
         self.subscribe()
 
     def on_close(self):
-        print('WebSocket disconnected')
+        self.logger.info('WebSocket disconnected')
 
     def on_message(self, message):
         messages = json.loads(message)
@@ -36,7 +38,7 @@ class RealtimeAPI(object):
             self.data_queue.put(message)
 
     def on_error(self, error):
-        print(error)
+        self.logger.error(error)
 
     def subscribe(self):
         self.ws.send(json.dumps({'method': 'subscribe', 'params': {'channel': self.channel}}))
@@ -52,16 +54,16 @@ class RealtimeAPI(object):
                     on_error=self.on_error)
                 self.ws.run_forever()
             except Exception as e:
-                print(e)
+                self.logger.error(e)
             time.sleep(3)
 
     def start(self):
-        print('Start streaming')
+        self.logger.info('Start streaming')
         self.running = True
         thread = threading.Thread(target=self.run, daemon=self.is_daemon)
         thread.start()
 
     def stop(self):
-        print('Stop streaming')
+        self.logger.info('Stop streaming')
         self.running = False
         self.ws.close()
