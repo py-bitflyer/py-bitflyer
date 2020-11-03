@@ -12,7 +12,7 @@ requires = [
 
 setup(
     name='py_bitflyer',
-    version='0.1.3',
+    version='0.1.4',
     description='A Python wrapper for bitFlyer API.',
     long_description=long_description,
     long_description_content_type='text/markdown',
